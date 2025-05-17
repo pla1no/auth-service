@@ -4,13 +4,15 @@ import (
 	"auth-service/db"
 	"auth-service/models"
 	"auth-service/utils"
+	"fmt"
+	"net/http"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 )
 
-var jwtKey = []byte("AD!!vk1sd414adQhAD£vn$I8!£ShAD13ad£$%AS45ad9dankbndA")
+var jwtKey = []byte("my_secret_key")
 
 func Login(c *gin.Context) {
 
@@ -144,32 +146,73 @@ func Logout(c *gin.Context) {
 }
 
 func ResetPassword(c *gin.Context) {
-
-	var user models.User
-
-	if err := c.ShouldBindJSON(&user); err != nil {
+	var payload struct {
+		Token       string `json:"token"`
+		NewPassword string `json:"new_password"`
+	}
+	if err := c.ShouldBindJSON(&payload); err != nil {
 		c.JSON(400, gin.H{"error": err.Error()})
 		return
 	}
 
-	var existingUser models.User
-
-	db.DB.Where("email = ?", user.Email).First(&existingUser)
-
-	if existingUser.ID == 0 {
-		c.JSON(400, gin.H{"error": "user does not exist"})
+	var pr models.PasswordReset
+	if err := db.DB.Where("token = ?", payload.Token).First(&pr).Error; err != nil {
+		c.JSON(400, gin.H{"error": "invalid or expired token"})
+		return
+	}
+	if time.Now().After(pr.ExpiresAt) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "token expired"})
 		return
 	}
 
-	var errHash error
-	user.Password, errHash = utils.GenerateHashPassword(user.Password)
+	db.DB.Delete(&pr)
 
-	if errHash != nil {
-		c.JSON(500, gin.H{"error": "could not generate password hash"})
+	hashed, err := utils.GenerateHashPassword(payload.NewPassword)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "hash error"})
+		return
+	}
+	db.DB.Model(&models.User{}).
+		Where("email = ?", pr.Email).
+		Update("password", hashed)
+
+	c.JSON(http.StatusOK, gin.H{"message": "password updated"})
+}
+
+func RequestPasswordReset(c *gin.Context) {
+	var payload struct{ Email string }
+	if err := c.ShouldBindJSON(&payload); err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
 		return
 	}
 
-	db.DB.Model(&existingUser).Update("password", user.Password)
+	var user models.User
+	if err := db.DB.Where("email = ?", payload.Email).First(&user).Error; err != nil {
+		c.JSON(400, gin.H{"message": "If that email exists, you’ll get a reset link"})
+		return
+	}
 
-	c.JSON(200, gin.H{"success": "password updated"})
+	token, err := utils.GenerateSecureToken(16)
+	if err != nil {
+		c.JSON(400, gin.H{"error": "could not generate reset token"})
+		return
+	}
+
+	expiresAt := time.Now().Add(30 * time.Minute)
+
+	db.DB.Where("email = ?", payload.Email).Delete(&models.PasswordReset{})
+	db.DB.Create(&models.PasswordReset{
+		Email:     payload.Email,
+		Token:     token,
+		ExpiresAt: expiresAt,
+	})
+
+	resetURL := fmt.Sprintf("http://localhost:8080/reset-password?token=%s", token)
+
+	if err := utils.SendResetEmail(payload.Email, resetURL); err != nil {
+		c.JSON(500, gin.H{"error": "could not send email"})
+		return
+	}
+
+	c.JSON(200, gin.H{"message": "If that email exists, you’ll get a reset link"})
 }

@@ -1,0 +1,45 @@
+POST http://localhost:8080/signup
+Content-Type: application/json
+
+{
+  "name": "sasa",
+  "email": "sasha_chernykh_2020@mail.ru",
+  "password": "SaSHa36033",
+  "role": "user"
+}
+
+###
+POST http://localhost:8080/reset-password
+Content-Type: application/json
+
+{
+  "token":"0cb576b5f23c8e62ff75aaa45dcc9a3a",
+  "new_password": "SaSHa360"
+}
+
+###
+POST http://localhost:8080/login
+Content-Type: application/json
+
+{
+  "name": "sasa",
+  "email": "sasha_chernykh_2020@mail.ru",
+  "password": "SaSHa360339",
+  "role": "user"
+}
+
+###
+GET http://localhost:8080/home
+Content-Type: application/json
+
+{
+  
+}
+
+###
+POST http://localhost:8080/request-reset-password
+Content-Type: application/json
+
+{
+  "email": "sasha_chernykh_2020@mail.ru"
+}

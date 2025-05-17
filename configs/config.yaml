@@ -7,3 +7,9 @@ db:
   port: "5432"
   dbname: "postgres"
   sslmode: "disable"
+
+mail:
+  host: "smtp.mail.ru"
+  port: "465"
+  address: "testforserv@mail.ru"
+  password: "pKYK94eEg6cum8zvaHT8"

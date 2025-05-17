@@ -20,7 +20,7 @@ func main() {
 		Username: viper.GetString("db.username"),
 		Password: viper.GetString("db.password"),
 		DBName:   viper.GetString("db.dbname"),
-		SLLMode:  viper.GetString("db.sslmode"),
+		SSLMode:  viper.GetString("db.sslmode"),
 	})
 
 	r := gin.Default()
