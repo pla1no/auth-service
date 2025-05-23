@@ -13,8 +13,8 @@ POST http://localhost:8080/reset-password
 Content-Type: application/json
 
 {
-  "token":"0cb576b5f23c8e62ff75aaa45dcc9a3a",
-  "new_password": "SaSHa360"
+  "token":"22307781a79acf69e01d76821d80ee89",
+  "new_password": "SaSHa360339"
 }
 
 ###
@@ -22,10 +22,8 @@ POST http://localhost:8080/login
 Content-Type: application/json
 
 {
-  "name": "sasa",
   "email": "sasha_chernykh_2020@mail.ru",
-  "password": "SaSHa360339",
-  "role": "user"
+  "password": "SaSHa360339"
 }
 
 ###

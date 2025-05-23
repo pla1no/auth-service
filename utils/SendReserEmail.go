@@ -35,29 +35,6 @@ func SendResetEmail(toEmail, resetURL string) error {
 	)
 	m.SetBody("text/plain", plain)
 
-	// HTML-версия с “кнопкой”
-	html := fmt.Sprintf(`
-        <html>
-          <body>
-            <p>Чтобы сбросить пароль, нажмите на кнопку ниже:</p>
-            <p><a href="%s" 
-                  style="
-                    display:inline-block;
-                    padding:10px 20px;
-                    font-size:16px;
-                    color:#ffffff;
-                    background-color:#007bff;
-                    text-decoration:none;
-                    border-radius:5px;
-                  ">
-                  Сбросить пароль
-               </a></p>
-            <p>Ссылка истечёт через 30 минут.</p>
-          </body>
-        </html>
-    `, resetURL)
-	m.AddAlternative("text/html", html)
-
 	d := gomail.NewDialer(cfg.Host, cfg.Port, cfg.Address, cfg.Password)
 	d.TLSConfig = &tls.Config{InsecureSkipVerify: true, ServerName: cfg.Host}
 

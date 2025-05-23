@@ -12,7 +12,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-var jwtKey = []byte("my_secret_key")
+var jwtKey = []byte("15£$£%a4A124d><hab?ad34w18a@92Asd13£$")
 
 func Login(c *gin.Context) {
 
@@ -93,7 +93,6 @@ func Signup(c *gin.Context) {
 }
 
 func Home(c *gin.Context) {
-
 	cookie, err := c.Cookie("token")
 
 	if err != nil {
@@ -117,7 +116,6 @@ func Home(c *gin.Context) {
 }
 
 func Premium(c *gin.Context) {
-
 	cookie, err := c.Cookie("token")
 
 	if err != nil {
@@ -150,6 +148,7 @@ func ResetPassword(c *gin.Context) {
 		Token       string `json:"token"`
 		NewPassword string `json:"new_password"`
 	}
+
 	if err := c.ShouldBindJSON(&payload); err != nil {
 		c.JSON(400, gin.H{"error": err.Error()})
 		return
@@ -160,6 +159,7 @@ func ResetPassword(c *gin.Context) {
 		c.JSON(400, gin.H{"error": "invalid or expired token"})
 		return
 	}
+
 	if time.Now().After(pr.ExpiresAt) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "token expired"})
 		return
@@ -172,9 +172,8 @@ func ResetPassword(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "hash error"})
 		return
 	}
-	db.DB.Model(&models.User{}).
-		Where("email = ?", pr.Email).
-		Update("password", hashed)
+
+	db.DB.Model(&models.User{}).Where("email = ?", pr.Email).Update("password", hashed)
 
 	c.JSON(http.StatusOK, gin.H{"message": "password updated"})
 }
@@ -198,7 +197,7 @@ func RequestPasswordReset(c *gin.Context) {
 		return
 	}
 
-	expiresAt := time.Now().Add(30 * time.Minute)
+	expiresAt := time.Now().Add(5 * time.Minute)
 
 	db.DB.Where("email = ?", payload.Email).Delete(&models.PasswordReset{})
 	db.DB.Create(&models.PasswordReset{

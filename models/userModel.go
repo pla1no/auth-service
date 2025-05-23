@@ -21,8 +21,3 @@ type PasswordReset struct {
 	ExpiresAt time.Time `gorm:"not null"`
 	CreatedAt time.Time
 }
-
-type PasswordResetPayload struct {
-	Token       string `json:"token"`
-	NewPassword string `json:"new_password"`
-}
