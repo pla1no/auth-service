@@ -5,7 +5,6 @@ import (
 	"auth-service/models"
 	"auth-service/utils"
 	"fmt"
-	"net/http"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
@@ -40,6 +39,7 @@ func Login(c *gin.Context) {
 	}
 
 	expirationTime := time.Now().Add(5 * time.Minute)
+	maxAge := int(time.Until(expirationTime).Seconds())
 
 	claims := &models.Claims{
 		Role: existingUser.Role,
@@ -58,7 +58,7 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	c.SetCookie("token", tokenString, int(expirationTime.Unix()), "/", "localhost", false, true)
+	c.SetCookie("token", tokenString, maxAge, "/", "localhost", false, true)
 	c.JSON(200, gin.H{"success": "user logged in"})
 }
 
@@ -156,12 +156,12 @@ func ResetPassword(c *gin.Context) {
 
 	var pr models.PasswordReset
 	if err := db.DB.Where("token = ?", payload.Token).First(&pr).Error; err != nil {
-		c.JSON(400, gin.H{"error": "invalid or expired token"})
+		c.JSON(401, gin.H{"error": "invalid or expired token"})
 		return
 	}
 
 	if time.Now().After(pr.ExpiresAt) {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "token expired"})
+		c.JSON(401, gin.H{"error": "token expired"})
 		return
 	}
 
@@ -169,13 +169,13 @@ func ResetPassword(c *gin.Context) {
 
 	hashed, err := utils.GenerateHashPassword(payload.NewPassword)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "hash error"})
+		c.JSON(500, gin.H{"error": "hash error"})
 		return
 	}
 
 	db.DB.Model(&models.User{}).Where("email = ?", pr.Email).Update("password", hashed)
 
-	c.JSON(http.StatusOK, gin.H{"message": "password updated"})
+	c.JSON(200, gin.H{"message": "password updated"})
 }
 
 func RequestPasswordReset(c *gin.Context) {

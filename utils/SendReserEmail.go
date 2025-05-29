@@ -30,7 +30,7 @@ func SendResetEmail(toEmail, resetURL string) error {
 	m.SetHeader("Subject", "Password reset request")
 
 	plain := fmt.Sprintf(
-		"To reset your password, click the link:\n\n%s\n\nThis link will expire in 30 minutes.",
+		"To reset your password, click the link:\n\n%s\n\nThis link will expire in 5 minutes.",
 		resetURL,
 	)
 	m.SetBody("text/plain", plain)
